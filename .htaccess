@@ -1,0 +1,34 @@
+RewriteEngine On
+
+# Preflight 対策（クロスドメイン XHR でのアクセスポリシー確認の動作）
+# OPTIONS メソッドでアクセスがあったときにダミーのファイルを返します。
+# OPTIONS メソッドではコンテンツは返さないため、このファイルは存在していなくても問題ありません。
+RewriteCond %{REQUEST_METHOD} ^OPTIONS
+RewriteRule ^(.*)$ 404.html [QSA,L]
+
+RewriteCond %{HTTP:X-Forwarded-Proto} ^http$
+RewriteRule ^(.*)$ https://%{SERVER_NAME}%{REQUEST_URI} [L,R]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^tags-([0-9]+)$ tag.php?id=$1 [QSA,L]
+RewriteRule ^([0-9]+)$ single.php?id=$1 [QSA,L]
+RewriteRule ^([a-z_A-Z]+)$ category.php?id=$1 [QSA,L]
+
+RewriteCond %{HTTP_USER_AGENT} (iPhone|iPod|iPad|Android|BlackBerry|windows\ (ce|phone)|Symbian) [NC]
+RewriteCond %{REQUEST_URI} !/sp/
+RewriteRule ^.*$ /sp%{REQUEST_URI} [QSA]
+
+Header set Vary Accept-Encoding,Cookie
+
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}\.php -f
+RewriteRule ^(.*)$ $1.php
+
+#AuthUserFile .htpasswd
+#AuthType Basic
+#AuthName "Web access"
+#Require valid-user
+
+ErrorDocument 503 /503.php 
+ErrorDocument 500 /500.php 
+ErrorDocument 404 /404.php 
